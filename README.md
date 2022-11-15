@@ -11,7 +11,7 @@
 
 ## 写在前面
 本项目是 (https://github.com/DIYer22/jetInKinect) 的翻新版。由于python2.7已停止维护且Kinect xbox 360停产，所以原来的代码已经过时。原项目的语音控制部分日后有时间会更新。
-
+示范视频已经放在了腾讯视频上 (https://v.qq.com/x/page/q3363i9y2p0.html)
 ## 操作说明
 
 ### 身体骨骼控制部分
