@@ -9,96 +9,89 @@
 
 > Description：use the camera on the Laptop Computer to control jet in *GTA: San Andreas* on windows
 
-## Demo
-
-[![](img/demo.gif)](https://v.qq.com/x/page/w0528gnfxhx.html)
-
-[Video Demo on 腾讯视频](https://v.qq.com/x/page/w0528gnfxhx.html)
+## 写在前面
+本项目是 (https://github.com/DIYer22/jetInKinect) 的翻新版。由于python2.7已停止维护且Kinect xbox 360停产，所以原来的代码已经过时。原项目的语音控制部分日后有时间会更新。
 
 ## 操作说明
 
-### 1. 身体骨骼控制部分
+### 身体骨骼控制部分
 
-kinect 各节点名称
+MediaPipe Pose中的地标模型预测了33个Pose地标的位置
 
-![](img/joint.png)
+![](../img/Snipaste_2022-11-15_18-41-21.png)
 
 节点与节点间生成以下向量
-> * spineVector：脊柱所在向量
-> * shoulderVector：两个肩膀节点所在向量
-> * elbowVector：两个肘关节所在向量
-> * shoulderElhow：手臂的上臂向量
-> * elbowWrist：手臂的前臂向量
-> * hipKnee：大腿的向量
-> * bodyz：由spineVector和shoulderVector叉积求得的身体平面的法向量
+> * shoulderElhowLeft:左大臂向量
+> * shoulderElhowRight:右大臂向量
+> * elbowWristleft:左小臂向量
+> * elbowWristRight:右小臂向量
+> * shoulderVector:肩膀向量
+> * elbowVector:两肘关节相连的向量
+> * hipKneeLeft:左大腿向量
+> * hipKneeRight:右大腿向量
+
 
 
 1. 默认状态
-> ![](img/NULL.png)
-> * `动作`：人面向Kinect 竖直战立，手臂的上臂与身体在同一平面， 手臂的前臂正对着Kinect
+> ![](../img/null.jpg)
+> * `动作`：人面向电脑镜头竖直战立，两大臂自然贴身，小臂提到腰间，略微张开
 > * `原理`：无
 >* `映射按键`：无
->* `功能`：默认状态 啥也不做
+>* `功能`：默认状态
 
 2. 垂直起飞
-> ![](img/w.png)
-> * `动作`：保持上臂与身体在同一平面， 前臂正对着Kinect，将上臂抬起，使之尽量与肩膀齐平
-> * `原理`：计算shoulderElhowLeft 和 shoulderElhowRight的夹角 大于100°则垂直起
+> ![](../img/w.jpg)
+> * `动作`：两臂抬起，使之尽量与肩膀齐平
+> * `原理`：计算shoulderElhowLeft 和 shoulderElhowRight的夹角 大于100°则垂直起飞
 >* `映射按键`：`W`
 >* `功能`：缓慢垂直向上升空
 
 3. 垂直下降
-> ![](img/s.png)
-> * `动作`：上半身与默认状态保持一致，脚呈半蹲姿势
-> * `原理`：hipKneeLeft与向量(0,0,-1)的夹角若小于80°则激发
+> ![](../img/s.jpg)
+> * `动作`：上半身与默认状态保持一致，左腿抬起
+> * `原理`：hipKneeLeft与向量(0,0,1)的夹角若大于130°则激发
 >* `映射按键`：`S`
 >* `功能`：缓慢垂直降落
 
 4. 左倾斜/右倾斜
-> ![](img/a.png)
-> ![](img/d.png)
+> ![](../img/a.jpg)
+> ![](../img/d.jpg)
 > * `动作`：保持左右手肘有较大高度落差
 > * `原理`：elbowVector 和 向量(0,1,0)的角度小于75° or 大于105° 则激发
 >* `映射按键`：`A/D`
 >* `功能`：飞机左倾斜/右倾斜
 
 5. 前倾斜/后倾斜
-> ![](img/up.png)
-> ![](img/down.png)
-> * `动作`：保持前臂与水平面有较大角度
-> * `原理`：elbowWrist 和 spineVector的角度小于80° or 大于120° 则激发
+> ![](../img/up.jpg)
+> ![](../img/down.jpg)
+> * `动作`：两拳的高度在鼻子以上（同时两大臂的角度不应大于100度）或者髋以下
+> * `原理`：拳的纵坐标小于鼻子的或者大于髋的
 >* `映射按键`：`up array/down array`
 >* `功能`：飞机前倾斜/后倾斜
 
 6. 左旋转/右旋转
-> ![](img/q.png)
-> ![](img/e.png)
-> * `动作`：上半身左/右旋转一定角度
-> * `原理`：shoulderVector和 向量(0,0,1)的角度小于75° or 大于105° 则激发
+> ![](../img/q.jpg)
+> ![](../img/e.jpg)
+> * `动作`：一个拳的位置不变，另一个放在胸前
+> * `原理`：Q(横坐标:左肩>左拳>右肩>右拳)  E(横坐标:左拳>左肩>右拳>右肩)
 >* `映射按键`：`Q/E`
 >* `功能`：飞机的方向在水平左旋转/右旋转
 
 7. 加速/减速
-> ![](img/n8.png)
-> ![](img/n2.png)
-> * `动作`：前臂水平张开45°/前臂水平聚拢45°
-> * `原理`：elbowWrist 和 shoulderVector 的角度小于45° or 大于135° 则激发将左右手所得的角度再进行相减 再进一步判断
+> ![](../img/8.jpg)
+> ![](../img/2.jpg)
+> * `动作`：双臂交叉放于胸前/双臂不交叉放于胸前
+> * `原理`：8(横坐标:左肩>右拳>左拳>右肩)  2(横坐标:左肩>左拳>右拳>右肩)
 >* `映射按键`：`Num8/Num2`
 >* `功能`：飞机向前加速/减速
 
+8. 收放起落架
+> ![](../img/wheel.jpg)
+> * `动作`：上半身与默认状态保持一致，右腿抬起
+> * `原理`：hipKneeRight与向量(0,0,1)的夹角若大于130°则激发
+>* `映射按键`：`2`
+>* `功能`：飞机收放起落架
 
-### 2. 语音控制部分
-
-| 语音 | 映射按键  | 功能 |
-| --------   | :-----:  | :----  |
-| get in car| `F` | 上载具 |
-| get out car| `F` | 下载具 |
-| get airplane | `"jumpjet"` | 自动输入作弊码`jumpjet` 获得鹞式战斗机|
-| up wheel | `2` | 收/放飞机起落架 |
-| lock | `right Ctrl` | 锁定载具目标 以发射导弹 |
-| flash | `right Ctrl` | 发送干扰弹 以躲避导弹 |
-| radio | `r` | 切换电台 |
-| fire | `Num0` | 攻击/开火/发送导弹 |
 
 ## 一些方法
 
@@ -111,109 +104,45 @@ kinect 各节点名称
 
 代码：
 ```python
-def degreeOfVictor(p1,p2):
-    dotProduct = (p1*p2).sum()
-    norm = lambda p:(p**2).sum()**0.5
-    angle = dotProduct/(norm(p1)*norm(p2))
-    arccosDegree = lambda x:np.degrees(np.arccos(x))
-    degree = arccosDegree(angle)
+def degreeOfVictor(a, b):  
+    dotab = a.x * b.x + a.y * b.y + a.z * b.z
+    modulea = (a.x ** 2 + a.y ** 2 + a.z ** 2) ** 0.5
+    moduleb = (b.x ** 2 + b.y ** 2 + b.z ** 2) ** 0.5
+    cosab = dotab / modulea / moduleb
+    degree = math.degrees(math.acos(cosab))
     return degree
  ```
 
-优势：
-> * 不随着人的身高大小，高矮胖瘦，所在位置而变化
-> * 不同动作间 相互影响极小
-> * 相对直接用(x,y,z)，动作的状态空间多，数据稳定
-
-### 2. 获得上半身所在平面的法向量
-原理：
-
-　　求肩膀所在向量`a` 与脊椎所在向量`b` 的叉积即为上半身所在平面的法向量
-
-
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Cross_product_parallelogram.svg/330px-Cross_product_parallelogram.svg.png)
-
-![](https://wikimedia.org/api/rest_v1/media/math/render/svg/f0aa2d916cf302f911edfdca957231c820b7e618)
-
-### 3. 整合多个语音识别API 得到最佳综合结果
-
-在开发过程中， 我详细考察了各种语音识别方案
-
-
-| 方案 | 准确率 | 延迟 | 其他方面  | 评估结果 |
-| --------   | :-----:   | :-----  | :----  |:----  |
-| 离线方案 | 极低 | 0.5~1.5 s | 由于识别需要占用较多系统资源 会造成游戏卡顿 | 放弃 |
-| 百度云语音 | 一般 | 国内网 1.7~3.0 s |  | 优先考虑 |
-| 微软认知服务 | 较好 | 国内网 5~10 s |  | 可以考虑 |
-| Google Cloud Platform | 较好 | IPV6代理 > 8 s |  | 可以考虑 |
-
-最终 我将  百度云语音识别API,微软认知服务API 和 Google Cloud Platform 以**多线程**的形式进行融合
-
-只有最先被识别的语音命令会被执行，即提高了速度，又提高了命中率
-
-### 4. 超出3个点的点集拟合所在空间平面
-原理：
-> 1. 在点集中生成所有含有3个点的子集的组合
-> 1. 对每一个子集生成一个平面
-> 1. 将每一个平面的法向量的单位向量相加得到所求平面的法向量
 
 
 ## 安装指导
 
-1. 准备一套带有电源和USB接口的 Kinect设备(最好是Kinect for Windows版本)
-2. 安装Kincet SDK 1.8 ,KinectRuntime 1.8
-3. 准备一个Python 2.7  **32 bit** 环境(！非常重要 KinectSDK 1.8 只支持**32 bit** Python 建议安装一个32位的Miniconda2)
-4. 使用命令 `pip install -r requirements.txt` 安装所需要的包
-
-6. 安装游戏*GTA: San Andreas*
-6. 运行游戏 `gta_sa.exe`  在设置中的载具按键设置处 设置一下按键映射
+1. 一个自带摄像头的电脑
+2. 使用命令 `pip install -r requirements.txt` 安装所需要的包
+3. 由于pykeyboard 库是跨跨跨平台支持的，需要同时安装多个附加库才能够使用。参照这篇文章再下载几个轮子。https://juejin.cn/post/7107436185433636877
+4. 安装游戏*GTA: San Andreas*
+5. 运行游戏 `gta_sa.exe`  在设置中的载具按键设置处 设置一下按键映射
 原按键与新按键的映射为
 ```
 {
-        'up':'i',
-        'down':'k',
-        'n8':'o',
-        'n2':'l',
-        'rCtrl':'lAlt',
+        'up':'T',
+        'down':'U',
+        '2':Num1
 }
 ```
  结果如下图
-![](img/changeKeys.png)
-6. 最后，使用命令 `python jetInKinect.py` 开启Kinect 即可操纵
+![](../img/GTA_%20San%20Andreas%202022_11_15%2019_38_02.png)
+
+最后，使用命令 `python eye.py` 等待电脑摄像头亮起即可开始操作飞机
 
 
 ## 注意事项
 
-0. 语音控制部分同时使用了 百度云语音识别API,微软认知服务API 和 Google Cloud Platform，以同时提高速度和准确性，但准确率和网络延迟仍旧不够理想
+1. 对于新手来说 就算用手柄来控制GTA中的鹞式战斗机也非常困难，所以 用身体来控制需要一定的适应期(而且有时候按W键飞机并不是垂直起飞，原因暂时不明)
 
-0. 对于新手来说 就算用手柄来控制GTA中的鹞式战斗机也非常困难，所以 用身体来控制需要一定的适应期（对于熟悉用键盘开飞机的作者来说 用了半小时才熟悉）
-
-0. 由于Kinect传感器为红外视频，所以 建议避免穿黑色衣服（黑色衣服会吸收红外线 增加传感器误差）
-
-
-### 可改进事项
-
-0. 由于程序是通过键盘映射来操作的 键盘为点按的布尔操作 ，实际上 体感更适合于类似手柄摇杆的标量操作 这将会大大提升操控体验
-
-0. 语音识别可改为本地的预训练好的神经网络来识别
-
-## 项目总结
-　　生产实习开始时，由于微软几乎没有为`Pykinect`写文档 也缺乏参考代码，我还在考虑是使用`C#`还是`Python`来开发，最后 还是因为`numpy`和`iPython`的便利性 硬着头皮学`Pykinect`，由于微软只发布了一个pykinect的demo，所以熟悉API花费了一周多的时间
-
-理解完API后 灵机一动 想做飞行控制，由于飞行本就十分复杂，便详细思考控制方案，最终决定 将一部分不常用事件交由语音控制
-
-在后期`numpy`和`iPython`的便利性发挥了作用，体感数据处理得挺顺利的。后来才发现语音控制是一个坑，做了好多工作 包括查找与评估各个方案，对接各个API，多线程融合机智，但语音控制的效果仍不够理想
-
-总之 此次Kinect开发 即有趣又有收获
+2. 还有就是键盘问题。一定要下载一个英文键盘，这样进入游戏就不会收到shift键的困扰了。（之前用中文键盘的英文模式时进入游戏人物会经常跳）
 
 
 ## 参考
-0. [PyKinect - write Kinect games using Python!](https://github.com/Microsoft/PTVS/wiki/PyKinect)
-0. [向量 - 维基百科，自由的百科全书](https://zh.wikipedia.org/wiki/%E5%90%91%E9%87%8F)
-0. [向量积 - 维基百科，自由的百科全书](https://zh.wikipedia.org/wiki/%E5%90%91%E9%87%8F%E7%A7%AF)
-0. [Geometry Module   SymPy   documentation](http://docs.sympy.org/latest/modules/geometry/index.html#submodules)
-0. [Pygame v1.9.2 documentation](http://www.pygame.org/docs/)
-0. [PS/2 Keyboard - OSDev Wiki](http://wiki.osdev.org/PS/2_Keyboard)
-0. [百度语音-API参考-简介-百度云](https://cloud.baidu.com/doc/SPEECH/TTS-Online-Python-SDK.html#.E8.AF.B7.E6.B1.82.E8.AF.B4.E6.98.8E)
-0. [必应语音 API-认知服务试用体验 | Microsoft Azure](https://azure.microsoft.com/zh-cn/try/cognitive-services/)
-0. [speech_recognition: Speech recognition module for Python, supporting several engines and APIs, online and offline.](https://github.com/Uberi/speech_recognition/)
+1. [MediaPipe Pose] (https://google.github.io/mediapipe/solutions/pose#python-solution-api)
+2. [Pykeyboard库的使用] (https://blog.csdn.net/weixin_51802807/article/details/121179861?ops_request_misc=&request_id=&biz_id=102&utm_term=pykeyboard%E6%A3%80%E6%B5%8B%E9%94%AE%E7%9B%98%E8%BE%93%E5%85%A5&utm_medium=distribute.pc_search_result.none-task-blog-2~all~sobaiduweb~default-7-121179861.142^v63^control,201^v3^add_ask,213^v2^t3_control1&spm=1018.2226.3001.4187)
